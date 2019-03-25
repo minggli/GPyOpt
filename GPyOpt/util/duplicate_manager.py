@@ -1,8 +1,30 @@
 # Copyright (c) 2016, the GPyOpt Authors
 # Licensed under the BSD 3-clause license (see LICENSE.txt)
+from functools import partial
 
 import numpy as np
 from ..core.task.space import Design_space
+
+
+class RoundedSet(set):
+    """duplicated as of specified decimal places."""
+    def __init__(self, *args, decimals=4):
+        self._decimals = decimals
+        self._round = partial(np.around, decimals=self._decimals)
+        super(RoundedSet, self).__init__(*map(self._round, args))
+
+    def add(self, a):
+        super(RoundedSet, self).add(self._round(a))
+
+    def update(self, iterable):
+        super(RoundedSet, self).update(map(self._round, iterable))
+
+    def __contains__(self, a):
+        if super(RoundedSet, self).__contains__(self._round(a)):
+            return True
+        else:
+            return False
+
 
 class DuplicateManager(object):
     """
@@ -18,7 +40,7 @@ class DuplicateManager(object):
 
         self.space = space
 
-        self.unique_points = set()
+        self.unique_points = RoundedSet()
         self.unique_points.update(tuple(x.flatten()) for x in zipped_X)
 
         if np.any(pending_zipped_X):
