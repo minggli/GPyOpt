@@ -11,16 +11,23 @@ class RoundedSet(set):
     def __init__(self, *args, decimals=4):
         self._decimals = decimals
         self._round = partial(np.around, decimals=self._decimals)
-        super(RoundedSet, self).__init__(*map(self._round, args))
+        super(RoundedSet, self).__init__(self._round(args))
 
-    def add(self, a):
-        super(RoundedSet, self).add(self._round(a))
+    def add(self, value):
+        value = type(value)(self._round(value))
+        super(RoundedSet, self).add(self._round(value))
 
-    def update(self, iterable):
-        super(RoundedSet, self).update(map(self._round, iterable))
+    def update(self, value):
+        try:
+            value = (type(v)(self._round(v)) for v in value)
+        except TypeError:
+            value = type(value)(self._round(value))
+        finally:
+            super(RoundedSet, self).update(value)
 
-    def __contains__(self, a):
-        if super(RoundedSet, self).__contains__(self._round(a)):
+    def __contains__(self, value):
+        value = type(value)(self._round(value))
+        if super(RoundedSet, self).__contains__(value):
             return True
         else:
             return False
@@ -40,7 +47,8 @@ class DuplicateManager(object):
 
         self.space = space
 
-        self.unique_points = RoundedSet(decimals=kwargs.get("decimals", 4))
+        precision = kwargs.get("decimals", 4)
+        self.unique_points = RoundedSet(decimals=precision)
         self.unique_points.update(tuple(x.flatten()) for x in zipped_X)
 
         if np.any(pending_zipped_X):
