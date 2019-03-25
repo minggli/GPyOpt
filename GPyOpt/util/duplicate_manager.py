@@ -36,11 +36,11 @@ class DuplicateManager(object):
     :param ignored_zipped_X: matrix of configurations that the user desires to ignore (e.g., because they may have led to failures)
     """
 
-    def __init__(self, space, zipped_X, pending_zipped_X=None, ignored_zipped_X=None):
+    def __init__(self, space, zipped_X, pending_zipped_X=None, ignored_zipped_X=None, **kwargs):
 
         self.space = space
 
-        self.unique_points = RoundedSet()
+        self.unique_points = RoundedSet(decimals=kwargs.get("decimals", 4))
         self.unique_points.update(tuple(x.flatten()) for x in zipped_X)
 
         if np.any(pending_zipped_X):

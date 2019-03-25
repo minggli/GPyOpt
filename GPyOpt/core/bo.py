@@ -52,7 +52,7 @@ class BO(object):
         self.context = None
         self.num_acquisitions = 0
 
-    def suggest_next_locations(self, context = None, pending_X = None, ignored_X = None):
+    def suggest_next_locations(self, context = None, pending_X = None, ignored_X = None, **kwargs):
         """
         Run a single optimization step and return the next locations to evaluate the objective.
         Number of suggested locations equals to batch_size.
@@ -66,7 +66,7 @@ class BO(object):
         self.context = context
         self._update_model(self.normalization_type)
 
-        suggested_locations = self._compute_next_evaluations(pending_zipped_X = pending_X, ignored_zipped_X = ignored_X)
+        suggested_locations = self._compute_next_evaluations(pending_zipped_X = pending_X, ignored_zipped_X = ignored_X, **kwargs)
 
         return suggested_locations
 
@@ -215,7 +215,7 @@ class BO(object):
             return np.inf
         return np.sqrt(np.sum((self.X[-1, :] - self.X[-2, :]) ** 2))
 
-    def _compute_next_evaluations(self, pending_zipped_X=None, ignored_zipped_X=None):
+    def _compute_next_evaluations(self, pending_zipped_X=None, ignored_zipped_X=None, **kwargs):
         """
         Computes the location of the new evaluation (optimizes the acquisition in the standard case).
         :param pending_zipped_X: matrix of input configurations that are in a pending state (i.e., do not have an evaluation yet).
@@ -228,7 +228,7 @@ class BO(object):
 
         ### --- Activate de_duplication
         if self.de_duplication:
-            duplicate_manager = DuplicateManager(space=self.space, zipped_X=self.X, pending_zipped_X=pending_zipped_X, ignored_zipped_X=ignored_zipped_X)
+            duplicate_manager = DuplicateManager(space=self.space, zipped_X=self.X, pending_zipped_X=pending_zipped_X, ignored_zipped_X=ignored_zipped_X, **kwargs)
         else:
             duplicate_manager = None
 
